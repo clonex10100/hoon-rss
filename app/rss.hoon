@@ -1,8 +1,7 @@
 ::  rss.hoon
 ::  Watch RSS feeds and posts entries to link-store
 ::
-/-  rss
-/+  *server, default-agent, dbug
+/+  rss, *server, default-agent, dbug
 !:
 |%
 +$  versioned-state
@@ -16,6 +15,7 @@
 +$  card  card:agent:gall
 ::
 --
+::
 %-  agent:dbug
 =|  state=versioned-state
 ^-  agent:gall
@@ -53,7 +53,9 @@
   ++  on-arvo
     |=  [=wire =sign-arvo]
     ^-  (quip card _this)
-    ~&  >  'Onarvo {<sign-arvo>}'
+    ::If sign is an http-response from iris handle it with handle-response
+    ::If it's any other sign from iris crash
+    ::If it's not from iris handle with default agent
     ?+  -.sign-arvo  (on-arvo:def wire sign-arvo)
         %i
       ?>  ?=(%http-response +<.sign-arvo)
@@ -77,17 +79,19 @@
           %add-feed
         :-  ~
         state(feeds [+.action feeds:state])
-        ::
-        %fetch
+
+          %fetch
         :_  state
         =/  =url  ?~(feeds.state !! url.i.feeds.state)
-        ~&  >>  "FUckUrl {<url>}"
+        ~&  >  "Getting Url: {<url>}"
         ~[[%pass /[url] %arvo %i %request (get-url url) *outbound-config:iris]]
       ==
+
   ++  get-url
     |=  =url
     ^-  request:http
     [%'GET' url ~ ~]
+
   ++  handle-response
     |=  [=url resp=client-response:iris]
     ^-  (quip card _state)
@@ -96,86 +100,10 @@
       `state
     ?~  full-file.resp  !!
     =/  data  q.data.u.full-file.resp
-    =/  l  (lent (trip ^-(cord data)))
-    =/  p  (oust [0 11.345] (trip ^-(cord data)))
     ~&  >>  "{<data>}"
-    ~&  >  "{<p>}"
-    ~&  >  "{<l>}"
-    ::=/  xml  (rss-parse (trip data))
-    =/  xml  (rss-parse data)
-    ::=/  cdata  (remove-version data)
-    ::~&  >>  "File  {<full-file.resp>}"
-    ::~&  >  "Decl {<decl:de-xml:html>}"
-    ::~&  >>  "Got data from {<data>}"
-    ::~&  >>  "{<data>}"
+    =/  xml  (rss-parse:rss data)
     ~&  >>>  "{<xml>}"
     ?~  feeds.state  !!
-    ::=.  file.i.feeds.state  full-file.resp
+    ::This is where I need to send link-store cards
     `state
-
-
-  ++  rss-parse
-    |=  [xml=cord]
-    |^  ^-  (list rss-item:rss)
-    (rash xml root)
-
-    ++  root
-      ;~  sfix
-        ;~  pfix
-          (trash '<channel>')
-          channel
-        ==
-        %-  star  cha
-      ==
-
-    ++  channel
-      %+  ifix  (tagjest "channel")
-      ;~  sfix
-        %-  star
-        ;~  pfix
-          (trash '<item>')
-          item
-        ==
-        (trash '</channel>')
-      ==
-
-    ++  item
-      ^-  rss-item:rss
-      |^  %+  ifix  (tagjest "item")
-      ;~  sfix
-        ;~(plug ;~(pfix (trash '<title>') title) ;~(pfix (trash '<link>') link) ;~(pfix (trash '<pubDate>') pubdate))
-        (trash '</item>')
-      ==
-      ++  title
-        %+  ifix  (tagjest "title")
-        %-  star
-        ;~(less (jest '</title>') cha)
-
-      ++  link
-        %+  ifix  (tagjest "link")
-        %-  star
-        ;~(less (jest '</link>') cha)
-
-      ++  pubdate
-        ^-  date
-        ::[[& year] month [day hour minute second (list ux)]
-        ::Sun, 30 Aug 2020 10:51:10 +0000
-        ::X  , day mon  year h m s   x
-        %+  ifix  (tagjest "pubDate")
-        %-  star
-        ;~(less (jest '</pubDate>') cha)
-      --
-
-    ++  trash
-      |=  [str=cord]
-      %-  star
-      ;~(less (jest str) cha)
-
-    ++  tagjest
-      |=  [tag=tape]
-      [(jest (crip (weld ['<' tag] ">"))) (jest (crip (weld ['<' '/' tag] ">")))]
-
-    ++  cha  ::Match printable or whitespace
-      ;~(pose prn (mask ~[' ' `@`0x9 `@`0xa `@`0xd `@`'\\' `@`'"']))
-    --
   --

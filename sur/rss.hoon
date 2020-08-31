@@ -1,16 +1,18 @@
 ^?
 |%
 +$  action
-  $%  [%add-feed feed]
-      [%fetch bat=@]
+  $%  [%add-feed =feed]
+      [%fetch ~]
   ==
-+$  feed
+
++$  feed  ::Feed needs to have a list of link-store wires and a date that it was last checked
   $:  url=cord
-      file=(unit mime-data:iris)
+      link-group=path
   ==
+
 +$  rss-item
   $:  title=tape
       url=tape
-      pubdate=date
+      pubdate=tape
   ==
 --

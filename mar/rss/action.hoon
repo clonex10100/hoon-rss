@@ -1,4 +1,4 @@
-/-  rss
+/+  rss
 |_  =action:rss
 ++  grab
   |%

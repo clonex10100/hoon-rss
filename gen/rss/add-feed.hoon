@@ -7,4 +7,4 @@
     ==
 :-  %rss-action
 ^-  action
-[%add-feed [url `*mime-data:iris]]
+[%add-feed [url *wire]]
