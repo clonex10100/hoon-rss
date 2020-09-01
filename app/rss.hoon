@@ -162,6 +162,7 @@
     =.  xml  (skim xml |=(i=rss-item:rss (gth date.i last-fetch)))::Remove dupes
     ::~&  >>>  "{<xml>}"
     :_  state(feeds (~(put by feeds.state) url [path:feed this-fetch]))::Update the last checked time for the feed
+    %-  flop
     %+  turn  xml
     |=  [i=rss-item:rss]  ^-  card
       [%pass /rss %agent [our.bowl %link-store] %poke [%link-action !>([%save `wire`path:feed (crip title.i) (crip url.i)])]]
