@@ -13,6 +13,6 @@
 +$  rss-item
   $:  title=tape
       url=tape
-      pubdate=tape
+      date=@d
   ==
 --
