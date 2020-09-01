@@ -70,6 +70,7 @@
   ++  on-poke
     |=  [=mark =vase]
     ^-  (quip card _this)
+    ?>  (team:title [our src]:bowl)
     =^  cards  state
       ?+  mark  (on-poke:def mark vase)  ::Switch on the mark, if not handled pass the card to default agent
           %rss-action  (handle-action:hc !<(action:rss vase))
@@ -149,7 +150,8 @@
     ?.  ?=(%finished -.resp) ::If response type not finished simply print it and leave state unchanged
       ~&  >>>  -.resp
       `state
-    ?~  full-file.resp  !!
+    ?~  full-file.resp  ~&  >>>  "{<url>} responded with a blank page"
+    `state  ::If response is empty don't do anything
     =/  data  q.data.u.full-file.resp
     =/  xml=(list rss-item:rss)  (rss-parse:rss data)
     ::~&  >>  "{<xml>}"
