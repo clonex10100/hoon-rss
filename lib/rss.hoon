@@ -1,4 +1,4 @@
-/-  sur=rss
+/-  sur=rss, link-store
 ^?
 =<  [. sur]
 =,  sur

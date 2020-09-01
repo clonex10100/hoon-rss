@@ -1,14 +1,19 @@
 ^?
 |%
 +$  action
-  $%  [%add-feed =feed]
+  $%  [%add-feed =url =feed]
+      [%remove-feed =url]
+      [%set-wait wait=@dr]
       [%fetch ~]
   ==
 
 +$  feed  ::Feed needs to have a list of link-store wires and a date that it was last checked
-  $:  url=cord
-      link-group=path
+  $:  path=path
+      last-checked=@d
   ==
+
++$  url  @t
+
 
 +$  rss-item
   $:  title=tape

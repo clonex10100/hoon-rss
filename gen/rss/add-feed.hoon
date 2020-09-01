@@ -3,8 +3,8 @@
 /-  *rss
 :-  %say
 |=  $:  [now=@da eny=@uvJ =beak]
-        [[url=@t ~] ~]
+        [[url=@t path=wire ~] ~]
     ==
 :-  %rss-action
 ^-  action
-[%add-feed [url *wire]]
+[%add-feed [url path *@d]]
