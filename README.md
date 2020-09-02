@@ -9,7 +9,7 @@ Clone the repo. Make sure your urbit is mounted. You probably should install it 
 `|start %rss`
 
 # Usage
-Most interaction with the app is through it's generators:
+Most interaction with the app is through its generators:
 
 ### Add a feed
 You can list your link wires with `.^((set path) %gy /=link-store=/local-pages)` or you can open a link collection in landscape and look at the end of the url
