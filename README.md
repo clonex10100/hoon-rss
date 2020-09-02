@@ -1,5 +1,5 @@
 # hoon-rss
-An app for urbit. Watches rss feeds and posts the links to a link collection
+An app for urbit. Watches rss feeds and posts the links to a local link collection
 
 # Install
 Clone the repo. Make sure your urbit is mounted. You probably should install it on a moon or fake urbit. Copy the files into your urbit's home, then run these commands:
