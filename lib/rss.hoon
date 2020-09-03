@@ -11,7 +11,7 @@
   ++  root
     ;~  sfix
       ;~  pfix
-        (trash '<channel>')
+        (match-to '<channel>')
         channel
       ==
       %-  star  cha
@@ -22,31 +22,37 @@
     ;~  sfix
       %-  star
       ;~  pfix
-        (trash '<item>')
+        (match-to '<item>')
         item
       ==
-      (trash '</channel>')
+      (match-to '</channel>')
     ==
 
   ++  item
     |^  %+  ifix  (tagjest "item")
     ;~  sfix
       ;~  plug
-        ;~(pfix (trash '<title>') title)
-        ;~(pfix (trash '<link>') link)
-        ;~(pfix (trash '<pubDate>') pubdate)
+        ;~(pfix (match-to '<title>') title)
+        ;~(pfix (match-to '<link>') link)
+        ;~(pfix (match-to '<pubDate>') pubdate)
       ==
-      (trash '</item>')
+      (match-to '</item>')
     ==
     ++  title
       %+  ifix  (tagjest "title")
-      %-  star
-      ;~(less (jest '</title>') cha)
+      |^
+        ;~  pose
+          cdata
+          (match-to '</title>')
+        ==
+        ++  cdata  ::Extract title from CDATA tag if it exists
+          %+  ifix  [(jest '<![CDATA[') (jest ']]>')]
+          (match-to ']]>')
+      --
 
     ++  link
       %+  ifix  (tagjest "link")
-      %-  star
-      ;~(less (jest '</link>') cha)
+      (match-to '</link>')
 
     ++  pubdate
       ::[[& year] month [day hour minute second (list ux)]
@@ -87,11 +93,11 @@
             ==
           ==
         ==
-      (trash '</pubDate>')
+      (match-to '</pubDate>')
       ==
     --
 
-  ++  trash  ::Trash characters until pattern match input cord
+  ++  match-to  ::match characters until str
     |=  [str=cord]
     %-  star
     ;~(less (jest str) cha)
