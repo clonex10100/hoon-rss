@@ -1,10 +1,10 @@
 ::  rss|add-feed: add a feed
 ::
-/-  *rss
+/-  *rss, *post
 :-  %say
 |=  $:  [now=@da eny=@uvJ =beak]
-        [[url=@t path=wire ~] ~]
+        [[url=@t =resource ~] ~]
     ==
 :-  %rss-action
 ^-  action
-[%add-feed [url path *@d]]
+[%add-feed [url resource *@d]]

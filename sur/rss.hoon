@@ -1,3 +1,4 @@
+/-  *post
 ^?
 |%
 +$  action
@@ -8,7 +9,7 @@
   ==
 
 +$  feed  ::Feed needs to have a list of link-store wires and a date that it was last checked
-  $:  path=path
+  $:  =resource
       last-checked=@d
   ==
 
