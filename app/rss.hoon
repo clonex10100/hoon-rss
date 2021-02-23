@@ -165,34 +165,52 @@
   ^-  (quip card _state)
   :_  state
   %+  turn  ~(tap in ~(key by feeds.state))  iris-card
+:: +find-p return a unit of the first index where p evaluates to true
+::
+++  find-p
+  |*  [l=(list) p=$-(* ?)]
+  ^-  (unit @ud)
+  =>  .(l (homo l))
+  =|  i=@ud
+  |-
+  ?~  l  ~
+  ?:  (p i.l)
+    `i
+  $(i +(i), l t.l)
 ::
 ++  handle-response
   |=  [=url resp=client-response:iris]
   ^-  (quip card _state)
   ?.  ?=(%finished -.resp)
-    :: If response type not finished print it and leave state unchanged.
     ~&  >>>  "Invalid response {<-.resp>}"
     `state
   ?~  full-file.resp
-    :: If response is empty don't do anything
     ~&  >>>  "{<url>} responded with a blank page"
     `state
   =/  data  q.data.u.full-file.resp
   =/  xml=(list rss-item:rss)  (rss-parse:rss data)
-  ::~&  >>  "{<xml>}"
   =/  feed  (~(got by feeds.state) url)
   =/  last-fetch  last-checked.feed
-  :: Keep track of the date of the newest item to avoid dupes. If there are no items then use prev date
-  =/  this-fetch  ?~  xml  last-fetch  
-  :: Get the latest date out of all items
-  ^-  @d  (roll (turn xml |=(i=rss-item:rss ^-(@d date.i))) max)  
-  :: Remove dupes
-  =.  xml  (skim xml |=(i=rss-item:rss (gth date.i last-fetch)))
-  ::~&  >>>  "{<xml>}"
-  :: Update the last checked time for the feed
+  :: Sort xml by decending date
+  =.  xml
+    %+  sort  xml
+    |=  [a=rss-item:rss b=rss-item:rss]
+    (gth date.a date.b)
+  :: unit index of the first rss item that has a date
+  :: older than our last fetch
+  =/  first-seen-index
+  %+  find-p  xml
+  |=  [x=rss-item:rss]
+  (lte date.x last-fetch)
+  :: Cut off old items
+  =?  xml  ?=([~ u=@ud] first-seen-index)
+  (scag u.first-seen-index xml)
+  :: Update the last fetch time for the feed
+  =/  this-fetch
+    ?~(xml last-fetch date.i.xml)
   :_  state(feeds (~(put by feeds.state) url [resource:feed this-fetch]))
   =<  p
-  %^  spin  xml
+  %^  spin  (flop xml)
     now.bowl
   |=  [i=rss-item:rss index=@]
   :_  +(index)
