@@ -113,7 +113,6 @@
 ++  handle-action
     |=  =action:rss
     ^-  (quip card _state)
-    |^
     ?-  -.action  ::TODO More feed CRUD
         %add-feed
           :-  ~
@@ -126,33 +125,58 @@
           state(wait wait.+.action)
         %fetch  handle-fetch
     ==
-    ++  handle-fetch
-      ^-  (quip card _state)
-      :_  state
-      %+  turn  ~(tap in ~(key by feeds.state))  iris-card
-    --
+::
 ++  get-url
   |=  =url
   ^-  request:http
   [%'GET' url ~ ~]
-
+:: +iris-card make a request card for iris
+::
 ++  iris-card
   |=  [=url]  ^-  card
   ~&  >  "Getting Url: {<url>}"
   [%pass /[url] %arvo %i %request (get-url url) *outbound-config:iris]
-
+:: +timer-card marke a time card for behn
+::
 ++  timer-card
   |=  [wait=@dr]  ^-  card
   [%pass /rss-timer %arvo %b %wait (add now.bowl wait)]
-
+:: +link-card make a card to add a link to a collection
+::
+++  link-card
+  |=  [resource=resource:graph index=@ title=@t url=@t]
+  :-  %pass
+  :-  /rss
+  :-  %agent
+  :-  [our.bowl %graph-push-hook]
+  :-  %poke
+  :-  %graph-update
+  !>  ^-  update:graph
+  :+  %0  index
+  :-  %add-nodes
+  :-  resource
+  %-  ~(put by *(map index:post node:graph))
+  :-  ~[index]
+  :_  *internal-graph:graph
+  ^-  post:post
+  [our.bowl ~[index] now.bowl `(list content:post)`~[[%text title] [%url url]] ~ ~]
+::
+++  handle-fetch
+  ^-  (quip card _state)
+  :_  state
+  %+  turn  ~(tap in ~(key by feeds.state))  iris-card
+::
 ++  handle-response
   |=  [=url resp=client-response:iris]
   ^-  (quip card _state)
-  ?.  ?=(%finished -.resp) ::If response type not finished simply print it and leave state unchanged
-    ~&  >>>  -.resp
+  ?.  ?=(%finished -.resp)
+    :: If response type not finished print it and leave state unchanged.
+    ~&  >>>  "Invalid response {<-.resp>}"
     `state
-  ?~  full-file.resp  ~&  >>>  "{<url>} responded with a blank page"
-  `state  ::If response is empty don't do anything
+  ?~  full-file.resp
+    :: If response is empty don't do anything
+    ~&  >>>  "{<url>} responded with a blank page"
+    `state
   =/  data  q.data.u.full-file.resp
   =/  xml=(list rss-item:rss)  (rss-parse:rss data)
   ::~&  >>  "{<xml>}"
@@ -172,29 +196,10 @@
     now.bowl
   |=  [i=rss-item:rss index=@]
   :_  +(index)
-  %:  build-link-card
+  %:  link-card
       resource.feed
       index
       (crip title.i)
       (crip url.i)
   ==
-:: +build a card to add a new link to a collection
-::
-++  build-link-card
-  |=  [resource=resource:graph index=@ title=@t url=@t]
-  :-  %pass
-  :-  /rss
-  :-  %agent
-  :-  [our.bowl %graph-store]
-  :-  %poke
-  :-  %graph-update
-  !>  ^-  update:graph
-  :+  %0  index
-  :-  %add-nodes
-  :-  resource
-  %-  ~(put by *(map index:post node:graph))
-  :-  ~[index]
-  :_  *internal-graph:graph
-  ^-  post:post
-  [our.bowl ~[index] now.bowl `(list content:post)`~[[%text title] [%url url]] ~ ~]
 --
